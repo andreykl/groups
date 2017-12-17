@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-tabs #-}
 {-# LANGUAGE DataKinds, GADTs, TypeFamilies #-}
 {-# LANGUAGE FlexibleInstances, FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}

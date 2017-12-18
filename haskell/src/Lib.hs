@@ -2,6 +2,7 @@
 {-# LANGUAGE DataKinds, GADTs, TypeFamilies #-}
 {-# LANGUAGE FlexibleInstances, FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Lib
     ( someFunc
@@ -184,11 +185,11 @@ newtype Substitution4 = S4 ((Ordinal Four) -> (Ordinal Four))
 newtype Substitution3 = S3 ((Ordinal Three) -> (Ordinal Three))
 
 instance Monoid Substitution4 where
-	mempty = a0
+	mempty = a4_0
 	(S4 f) `mappend` (S4 g) = S4 $ f . g
 
 instance Monoid Substitution3 where
-	mempty = v3_0
+	mempty = a3_0
 	(S3 f) `mappend` (S3 g) = S3 $ f . g
 
 instance Show Substitution4 where
@@ -213,28 +214,36 @@ subs3 v = S3 $ (v !!)
 --subsr v = S $ \i -> vindex i $ reverseSubs v
 
 as4 = fmap subs4 vs4
+as3 = fmap subs3 vs3
 
 --class8 = take 8 $ drop 1 $ vToList as
 class4_3 = drop 9 $ vToList as4
 
-a4_0 = as !! zero 
-a4_1 = as !! one
-a4_2 = as !! two
-a4_3 = as !! three
-a4_4 = as !! four
-a4_5 = as !! five
-a4_6 = as !! six
-a4_7 = as !! seven
-a4_8 = as !! eight
-a4_9 = as !! nine
-a4_10 = as !! ten
-a4_11 = as !! eleven
+a4_0 = as4 !! zero 
+a4_1 = as4 !! one
+a4_2 = as4 !! two
+a4_3 = as4 !! three
+a4_4 = as4 !! four
+a4_5 = as4 !! five
+a4_6 = as4 !! six
+a4_7 = as4 !! seven
+a4_8 = as4 !! eight
+a4_9 = as4 !! nine
+a4_10 = as4 !! ten
+a4_11 = as4 !! eleven
+
+a3_0 = as3 !! zero
+a3_1 = as3 !! one
+a3_2 = as3 !! two
+a3_3 = as3 !! three
+a3_4 = as3 !! four
+a3_5 = as3 !! five
 
 reverseSubs4Vec :: Subs4Vec -> Subs4Vec
 reverseSubs4Vec v@(e0 :- e1 :- e2 :- e3 :- VNil) = v !! e0 :- v !! e1 :- v !! e2 :- v !! e3 :- VNil
 
 reverseSubs3Vec :: Subs3Vec -> Subs3Vec
-reverseSubs3Vec v@(e0 :- e1 :- e2 :- e3 :- VNil) = v !! e0 :- v !! e1 :- v !! e2 :- v :- VNil
+reverseSubs3Vec v@(e0 :- e1 :- e2 :- VNil) = v !! e0 :- v !! e1 :- v !! e2 :- VNil
 
 rev4 :: Substitution4 -> Substitution4
 rev4 (S4 f) = S4 f' where
@@ -242,46 +251,58 @@ rev4 (S4 f) = S4 f' where
 
 rev3 :: Substitution3 -> Substitution3
 rev3 (S3 f) = S3 f' where
-	f' i = vindexOf (fmap f v0) i
+	f' i = vindexOf (fmap f v3_0) i
 
 transformSubs4 :: Substitution4 -> Substitution4 -> Substitution4
-transformSubs4 a b = rev b <> a <> b
+transformSubs4 a b = rev4 b <> a <> b
 
 transformSubs3 :: Substitution3 -> Substitution3 -> Substitution3
-transformSubs3 a b = rev b <> a <> b
+transformSubs3 a b = rev3 b <> a <> b
 
 -- tra9 = transformSubs a9
 -- a9transformed = fmap tra9 . filter (\a -> a /= a9) . vToList $ as
 
 transformByAll4 a = fmap (transformSubs4 a) . filter (\a' -> a /= a') . vToList $ as4
-a4_9transformted = transformByAll4 a9
+transformByAll3 a = fmap (transformSubs3 a) . filter (\a' -> a /= a') . vToList $ as3
+
+a4_9transformted = transformByAll4 a4_9
 
 isInClass a c = getAny . mconcat . fmap (\a' -> Any $ a == a') $ c
 isInGroup = isInClass
-allInClass4 c as4 = getAll . mconcat . fmap (All . (flip isInClass $ c)) $ as4
+allInClass c as = getAll . mconcat . fmap (All . (flip isInClass $ c)) $ as
+-- allInClass3 c as3 = getAll . mconcat . fmap (All . (flip isInClass $ c)) $ as3
 
-isAClass4 c = getAll . mconcat . fmap (All . allInClass4 c . transformByAll4) $ c
+isAClass4 c = getAll . mconcat . fmap (All . allInClass c . transformByAll4) $ c
+isAClass3 c = getAll . mconcat . fmap (All . allInClass c . transformByAll3) $ c
 
 gen ys [] = []
 gen ys (x:xs) = [x:ys] ++ gen (x:ys) xs ++ gen ys xs
 
 allClassPretendents4 = gen [] $ drop 1 $ vToList as4 -- without those which contain [0,1,2,3]
+allClassPretendents3 = gen [] $ drop 1 $ vToList as3
 
-classes4 = filter isAClass allClassPretendents4
+classes4 = filter isAClass4 allClassPretendents4
+classes3 = filter isAClass3 allClassPretendents3
 
 -- we just know it from the book, no magic
 -- and we could see on results (there are just few of them) by eyes
 -- and notice that long-length items just contain the short-length ones
 trueclasses4 = filter (\xs -> length xs < 5) classes4
 
-isInvariantSubgroup subgroup = isAClass subgroup && isAGroup subgroup
+-- isInvariantSubgroup4 subgroup = isAClass4 subgroup && isAGroup subgroup
+isInvariantSubgroup3 subgroup = isAClass3 subgroup && isAGroup subgroup
+
+-- isAGroup :: forall s. [s] -> Bool
 isAGroup g = getAll $ mconcat $ fmap (All . isElemOfGroupG) g where
 	isElemOfGroupG = isElemOfGroup g
 
-isElemOfGroup :: [Substitution4] -> Substitution4 -> Bool
+-- isAGroup3 g = getAll $ mconcat $ fmap (All . isElemOfGroupG) g where
+--        isElemOfGroupG = isElemOfGroup g
+
+-- isElemOfGroup4 :: [Substitution4] -> Substitution4 -> Bool
 isElemOfGroup g a = getAll $ mconcat $ fmap (\a' -> All $ isInGroup (a <> a') g && isInGroup (a' <> a) g) g
 
-isCommutative :: [Substitution4] -> Bool
+-- isCommutative4 :: [Substitution4] -> Bool
 isCommutative [] = True
 isCommutative (x:xs) = (getAll . mconcat . fmap (\x' -> All $ x <> x' == x' <> x) $ xs) && isCommutative xs
 	
